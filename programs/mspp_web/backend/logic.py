@@ -77,7 +77,7 @@ class DataProcessor:
                 usecols = [c for c in [prot_col] + raw_cols if c]
 
                 # Load only necessary columns to save RAM
-                df = pd.read_csv(filepath, sep="\t", usecols=usecols, low_memory=False)
+                df = pd.read_csv(filepath, sep="\t", usecols=usecols if usecols else None, low_memory=False)  # ty:ignore[no-matching-overload]
             except Exception as e:
                 logging.warning(f"Fast load failed for {filepath}, falling back to full load: {e}")
                 df = pd.read_csv(filepath, sep="\t", low_memory=False)
@@ -118,13 +118,13 @@ class DataProcessor:
             return None
 
         prot_col = next((c for c in ["Protein.Group", "Protein.Ids", "Protein.Names"] if c in e25_org.columns), None)
-        if not prot_col: return None
+        if not prot_col: return None  # noqa: E701
 
         e25_v = e25_org[(e25_org[e25_col].notna()) & (e25_org[e25_col] > 0)]
         e100_v = e100_org[(e100_org[e100_col].notna()) & (e100_org[e100_col] > 0)]
 
         common = set(e25_v[prot_col]) & set(e100_v[prot_col])
-        if not common: return None
+        if not common: return None  # noqa: E701
 
         e25_c = e25_v[e25_v[prot_col].isin(common)].set_index(prot_col)
         e100_c = e100_v[e100_v[prot_col].isin(common)].set_index(prot_col)
@@ -148,8 +148,8 @@ class DataProcessor:
 
         e25_exp, e100_exp = [], []
         for f in sample_files:
-            if re.search(r'E[-_]?25|Y[-_]?150', f.upper()): e25_exp.append(f)
-            elif re.search(r'E[-_]?100|Y[-_]?75', f.upper()): e100_exp.append(f)
+            if re.search(r'E[-_]?25|Y[-_]?150', f.upper()): e25_exp.append(f)  # noqa: E701
+            elif re.search(r'E[-_]?100|Y[-_]?75', f.upper()): e100_exp.append(f)  # noqa: E701
 
         strict_pairs_dict, singlets = {}, []
         def get_suffix(name):
@@ -159,23 +159,23 @@ class DataProcessor:
         for s in e25_exp:
             suff = get_suffix(s)
             if suff:
-                if suff not in strict_pairs_dict: strict_pairs_dict[suff] = {}
-                if 'E25' in strict_pairs_dict[suff]: singlets.append(s)
-                else: strict_pairs_dict[suff]['E25'] = s
-            else: singlets.append(s)
+                if suff not in strict_pairs_dict: strict_pairs_dict[suff] = {}  # noqa: E701
+                if 'E25' in strict_pairs_dict[suff]: singlets.append(s)  # noqa: E701
+                else: strict_pairs_dict[suff]['E25'] = s  # noqa: E701
+            else: singlets.append(s)  # noqa: E701
 
         for s in e100_exp:
             suff = get_suffix(s)
             if suff:
-                if suff not in strict_pairs_dict: strict_pairs_dict[suff] = {}
-                if 'E100' in strict_pairs_dict[suff]: singlets.append(s)
-                else: strict_pairs_dict[suff]['E100'] = s
-            else: singlets.append(s)
+                if suff not in strict_pairs_dict: strict_pairs_dict[suff] = {}  # noqa: E701
+                if 'E100' in strict_pairs_dict[suff]: singlets.append(s)  # noqa: E701
+                else: strict_pairs_dict[suff]['E100'] = s  # noqa: E701
+            else: singlets.append(s)  # noqa: E701
 
         strict_pairs = []
-        for suff, p in strict_pairs_dict.items():
-            if 'E25' in p and 'E100' in p: strict_pairs.append((p['E25'], p['E100']))
-            else: singlets.extend(p.values())
+        for suff, p in strict_pairs_dict.items():  # noqa: B007
+            if 'E25' in p and 'E100' in p: strict_pairs.append((p['E25'], p['E100']))  # noqa: E701
+            else: singlets.extend(p.values())  # noqa: E701
 
         if strict_pairs:
             logging.info(f"Strict pairing: {len(strict_pairs)} pairs. Excluded {len(singlets)} singlets.")
@@ -183,7 +183,7 @@ class DataProcessor:
         else:
             logging.warning("No suffix matches. Falling back to index pairing.")
             e25_s, e100_s = sorted(e25_exp), sorted(e100_exp)
-            sample_pairs = list(zip(e25_s, e100_s))
+            sample_pairs = list(zip(e25_s, e100_s, strict=False))
 
         results = {'HeLa': [], 'E.coli': [], 'Yeast': []}
         for e25, e100 in sample_pairs:
@@ -252,7 +252,7 @@ class PlotGenerator:
             ('Yeast', "Yeast Log2 Ratio (Expected: 1)", 1)
         ]
 
-        for ax, (org, title, ref) in zip(axes, configs):
+        for ax, (org, title, ref) in zip(axes, configs, strict=False):
             if results[org]:
                 self.plot_ratio_comparison(ax, results[org], title, self.COLORS[org], ref)
             else:
