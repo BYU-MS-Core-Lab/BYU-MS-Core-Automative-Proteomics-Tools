@@ -1,3 +1,12 @@
+---
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    mainfont: Atkinson Hyperlegible Next
+    fontsize: 13pt
+---
+
 # How to set up a data processing + analysis workflow with Fragpipe and Fragpipe Analyst
 
 ------------------------------------------------------------------------
@@ -399,7 +408,7 @@ Result: 2 conditions (E100, E25) × 24 samples each ✅
 
 **Example Python code to automate this process (you may need to change str.extract & alias for your own samples):**
 
-``` python
+```{python}
 import polars as pl
 
 # Read the annotation file
