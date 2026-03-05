@@ -8,6 +8,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-03-05
+
+### Added
+- **LICENSE File**
+  - Update License to Apache 2.0 license to ensure proper open-source compliance
+
+### Changed
+- **CONTRIBUTING.md Updates**
+  - Enhanced clarity in setup and development instructions
+  - Corrected repository links and folder structure references
+  - Updated Python version recommendations (3.14+ now supported)
+  - Updated project structure diagram to reflect actual folder layout
+- **Documentation Format**
+  - Renamed `FA_Workflow_Tutorial` from Markdown (.md) to Quarto (.qmd) format for enhanced documentation capabilities
+- **Dependency Updates**
+  - Bumped versions: numpy, pandas, pillow, ruff, ipykernel, gunicorn, pip, ty, nicegui, pydocstyle
+  - Updated mypy python_version configuration to 3.14
+  - Updated pixi.lock to reflect all dependency changes
+- **Notebook Metadata**
+  - Updated notebook configuration to specify Python 3.14.3 as target kernel version
+  - Enhanced notebook metadata for improved preview support
+
+### Removed
+- **Visual Elements**
+  - Removed emoji icons from README section headings for consistency and accessibility
+  - Deleted MSPP data analysis Quarto document duplicate (consolidated with jupyter notebook)
+
+### Fixed
+- **Code Quality**
+  - Fixed code formatting inconsistencies with type ignore comments for linter compliance
+  - Improved comments in Flask backend API (`app.py`) for better code documentation
+- **File Categorization**
+  - Updated `.gitattributes` to properly categorize Jupyter notebooks as documentation rather than code
+
+### Refactored
+- **Backend Logic**
+  - Refactored `logic.py` formatting and control flow for improved clarity and maintainability
+  - Expanded and improved code comments in `logic.py` for better developer understanding
+- **Python Tools**
+  - Refactored `filter_fasta_gui.py` script for improved code organization and readability
+
 ## [0.2.1] - 2026-01-23
 
 ### Removed
