@@ -5,7 +5,7 @@ Thank you for your interest in contributing to our mass spectrometry analysis to
 ## Getting Started
 
 ### Prerequisites
-- Python 3.10 or higher
+- Python 3.10 or higher (3.14+ recommended)
 - Node.js 18+ (for web app development)
 - Git
 
@@ -13,7 +13,7 @@ Thank you for your interest in contributing to our mass spectrometry analysis to
 
 1. **Clone the repository**
    ```powershell
-   git clone https://github.com/MSCoreLab/BYU-Core-MS-Lab.git
+   git clone https://github.com/BYU-MS-Core-Lab/BYU-MS-Core-Automative-Proteomics-Tools.git
    cd BYU-Core-MS-Lab
    ```
 
@@ -29,9 +29,6 @@ Thank you for your interest in contributing to our mass spectrometry analysis to
    ```powershell
    # Install with development tools
    pip install -e ".[dev]"
-   
-   # Or just production dependencies
-   pip install -r requirements.txt
    ```
 
 4. **For web app development**
@@ -64,8 +61,11 @@ Thank you for your interest in contributing to our mass spectrometry analysis to
 # Run web app
 python programs/mspp_web/launch_app.py
 
-# Run desktop app
-python programs/pyscripts/MSPP_data_plotter.py
+# Run Python tools (filter FASTA, data analysis, etc.)
+python programs/python/filter_fasta_gui.py
+
+# Run Jupyter notebook for data analysis
+jupyter notebook programs/python/MSPP_data_analysis.ipynb
 
 # Deactivate when done
 deactivate
@@ -143,12 +143,14 @@ Prefixes:
 ```
 BYU-Core-MS-Lab/
 ├── programs/           # Applications
-│   ├── mspp_web/      # Web application
-│   └── pyscripts/     # Desktop GUI tools
-├── docs/              # Documentation (coming soon)
-├── tests/             # Unit tests (coming soon)
-├── requirements.txt   # Python dependencies
-└── pyproject.toml     # Project metadata
+│   ├── mspp_web/      # Web application (Flask backend + React frontend)
+│   └── python/        # Python tools and scripts
+├── scripts/           # Development and setup scripts
+├── documentations/    # Documentation and reference materials
+├── tests/             # Unit tests and debugging utilities
+├── tutorials/         # Workflow tutorials and guides
+├── pyproject.toml     # Project metadata and dependencies
+└── LICENSE            # Apache 2.0 License
 ```
 
 ## Pull Request Process
