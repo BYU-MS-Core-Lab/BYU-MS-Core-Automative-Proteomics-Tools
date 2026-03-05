@@ -34,13 +34,16 @@ mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 mimetypes.add_type('text/html', '.html')
 
-# Cross-platform path handling
-BACKEND_DIR = Path(__file__).parent.absolute()
-# The 'dist' folder is up one level in the 'frontend' directory
-STATIC_FOLDER = (BACKEND_DIR.parent / 'frontend' / 'dist').absolute()
-TEMP_DIR = Path(os.getenv('MSPP_TEMP_DIR', tempfile.gettempdir()))
+# Cross-platform path handling using absolute paths
+# Use os.path.abspath(os.path.dirname(__file__)) for maximum compatibility on restricted Windows
+BACKEND_DIR = os.path.abspath(os.path.dirname(__file__))
+# The 'dist' folder is up one level from 'backend' in the 'frontend' directory
+STATIC_FOLDER = os.path.abspath(os.path.join(BACKEND_DIR, '..', 'frontend', 'dist'))
+TEMP_DIR = os.path.abspath(os.getenv('MSPP_TEMP_DIR', tempfile.gettempdir()))
 
-# Initialize Flask without an automatic static folder to avoid path conflicts
+logger.info(f"Static folder initialized at: {STATIC_FOLDER}")
+
+# Initialize Flask without an automatic static folder
 app = Flask(__name__, static_folder=None)
 
 # Configure CORS
@@ -67,31 +70,41 @@ def add_security_headers(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
-    # Removed CSP header to prevent blocking legitimate React assets/scripts
     return response
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-    """
-    Catch-all route that serves the React app and its assets.
-    """
-    # Normalize path: browsers use forward slashes, Windows uses backslashes
-    # We always use forward slashes for the internal Flask serving
-    if not path or path == '/':
-        target_file = 'index.html'
-    else:
-        target_file = path
+@app.route('/')
+def serve_index():
+    """Serves the main entry point."""
+    logger.info("Serving index.html")
+    return send_from_directory(STATIC_FOLDER, 'index.html')
 
-    # Check if the file exists on the physical disk
-    full_path = (STATIC_FOLDER / target_file.replace('/', os.sep)).absolute()
+@app.route('/<path:path>')
+def serve_static(path):
+    """
+    Manually serves static files. 
+    Explicitly checks for file existence to avoid MIME type errors.
+    """
+    # Normalize path for Windows compatibility
+    safe_path = path.replace('/', os.sep)
+    full_path = os.path.abspath(os.path.join(STATIC_FOLDER, safe_path))
     
-    if full_path.exists() and full_path.is_file():
-        mime_type, _ = mimetypes.guess_type(str(full_path))
-        logger.info(f"Serving asset: {target_file} (MIME: {mime_type})")
-        # Flask's send_from_directory handles the path correctly if we give it the relative path
-        return send_from_directory(str(STATIC_FOLDER), target_file)
-    
+    # Security check: ensure the resolved path is inside the STATIC_FOLDER
+    if not full_path.startswith(STATIC_FOLDER):
+        logger.warning(f"Security: Blocked attempt to access path outside static folder: {full_path}")
+        return jsonify({'error': 'Forbidden'}), 403
+
+    if os.path.isfile(full_path):
+        mime_type, _ = mimetypes.guess_type(full_path)
+        logger.info(f"Serving file: {path} (MIME: {mime_type})")
+        return send_from_directory(STATIC_FOLDER, path)
+
+    # CRITICAL: If the request looks like an asset (JS/CSS) but wasn't found,
+    # do NOT fall back to index.html. Return a 404 to avoid MIME type errors.
+    ext = os.path.splitext(path)[1].lower()
+    if ext in ('.js', '.css', '.png', '.jpg', '.svg', '.ico', '.map'):
+        logger.warning(f"Asset not found: {path} (Expected at: {full_path})")
+        return jsonify({'error': 'Asset not found'}), 404
+
     # If the path is an API call, return 404
     if path.startswith('api/'):
         logger.warning(f"API Route Not Found: {path}")
@@ -99,7 +112,7 @@ def catch_all(path):
         
     # Fallback to index.html for all other routes (React Router support)
     logger.info(f"Path not found, falling back to index.html: {path}")
-    return send_from_directory(str(STATIC_FOLDER), 'index.html')
+    return send_from_directory(STATIC_FOLDER, 'index.html')
 
 @app.route('/api/health')
 def health_check():
@@ -118,10 +131,10 @@ def upload_files():
     for file in files:
         if file and file.filename and file.filename.lower().endswith(('.tsv', '.txt')):
             safe_name = secure_filename(file.filename)
-            temp_path = TEMP_DIR / safe_name
-            temp_path.parent.mkdir(parents=True, exist_ok=True)
+            temp_path = os.path.join(TEMP_DIR, safe_name)
+            os.makedirs(os.path.dirname(temp_path), exist_ok=True)
             file.save(temp_path)
-            uploaded_files[safe_name] = str(temp_path)
+            uploaded_files[safe_name] = temp_path
             temp_paths.append(safe_name)
             logger.info(f"File uploaded: {safe_name} to {temp_path}")
 
@@ -136,7 +149,8 @@ def manage_files():
     if request.method == 'DELETE':
         for path in uploaded_files.values():
             with contextlib.suppress(Exception):
-                Path(path).unlink(missing_ok=True)
+                if os.path.exists(path):
+                    os.remove(path)
         uploaded_files.clear()
         if hasattr(processor, 'cached_data'):
             processor.cached_data = None
