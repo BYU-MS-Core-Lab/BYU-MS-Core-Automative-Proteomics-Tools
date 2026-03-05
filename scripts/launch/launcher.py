@@ -135,6 +135,24 @@ Environment Variables:
     # Start Flask server
     print("Starting backend server...")
     print("")
+    
+    # Open browser after a short delay to allow server to start
+    import threading
+    import time
+    
+    def open_browser():
+        time.sleep(2)  # Wait for server to start
+        url = f"http://{host}:{port}"
+        try:
+            webbrowser.open(url)
+            print(f"Browser opened at {url}")
+        except Exception as e:
+            print(f"Could not open browser automatically: {e}")
+            print(f"Please manually visit: {url}")
+    
+    # Start browser in background thread
+    browser_thread = threading.Thread(target=open_browser, daemon=True)
+    browser_thread.start()
 
     try:
         app.run(host=host, port=port, debug=debug, use_reloader=False, threaded=True)

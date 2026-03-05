@@ -42,6 +42,14 @@ BACKEND_DIR = Path(__file__).parent
 STATIC_FOLDER = str(BACKEND_DIR.parent / 'frontend' / 'dist')
 TEMP_DIR = Path(os.getenv('MSPP_TEMP_DIR', tempfile.gettempdir()))
 
+# Verify static folder exists
+if not Path(STATIC_FOLDER).exists():
+    logger.warning(f"Static folder not found: {STATIC_FOLDER}")
+else:
+    logger.info(f"Static folder found: {STATIC_FOLDER}")
+    logger.info(f"  - index.html exists: {Path(STATIC_FOLDER, 'index.html').exists()}")
+    logger.info(f"  - assets folder exists: {Path(STATIC_FOLDER, 'assets').exists()}")
+
 app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path='')
 
 # Configure CORS with environment-based origins for flexibility
@@ -58,6 +66,11 @@ processor = DataProcessor()
 plotter = PlotGenerator(processor)
 uploaded_files = {}
 
+@app.before_request
+def log_request():
+    """Log incoming requests for debugging."""
+    logger.debug(f"Request: {request.method} {request.path}")
+
 @app.after_request
 def add_security_headers(response):
     """
@@ -65,6 +78,7 @@ def add_security_headers(response):
     - Cache-Control: Prevents browsers from caching sensitive proteomics data.
     - CSP: Restricts resource loading to 'self' while allowing data: URIs for base64 plots.
     """
+    logger.debug(f"Response: {request.path} -> {response.status_code}")
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -75,6 +89,19 @@ def add_security_headers(response):
 def serve_react_app():
     """Serves the compiled React frontend from the /dist folder."""
     return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/<path:path>')
+def serve_static_files(path):
+    """Serves static files (JS, CSS, images, etc.) from the dist folder."""
+    # Try to serve the file if it exists
+    full_path = Path(app.static_folder) / path
+    if full_path.exists() and full_path.is_file():
+        return send_from_directory(app.static_folder, path)
+    # If file doesn't exist and it's not an API route, serve index.html for React Router
+    if not path.startswith('api/'):
+        return send_from_directory(app.static_folder, 'index.html')
+    # 404 for missing API routes
+    return jsonify({'error': 'Not found'}), 404
 
 @app.route('/api/health')
 def health_check():
