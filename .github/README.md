@@ -2,7 +2,7 @@
 
 Mass Spectrometry QC and analysis tools for Brigham Young University's Fritz B. Burns Cancer Research Center MS Core Facility.
 
-## 🔬 Overview
+## Overview
 
 This repository contains workflows and tools for bottom-up proteomics analysis, focusing on:
 - Quality control optimization for MS Core Facility operations
@@ -10,7 +10,7 @@ This repository contains workflows and tools for bottom-up proteomics analysis, 
 - Protein identification and quantification
 - Data visualization for DIA-NN output
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.10+ ([Download](https://www.python.org/downloads/))
@@ -39,7 +39,7 @@ cd programs/mspp_web/frontend
 npm install
 ```
 
-## 📊 Tools
+## Tools
 
 ### MSPP Data Plotter (Web App)
 Modern web-based interface for proteomics data visualization.
@@ -73,7 +73,7 @@ Tool for filtering FASTA files by organism patterns.
 python programs/pyscripts/filter_fasta_gui.py
 ```
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 BYU-Core-MS-Lab/
@@ -88,7 +88,7 @@ BYU-Core-MS-Lab/
 └── pyproject.toml        # Project metadata
 ```
 
-## 🧪 Typical Workflow
+## Typical Workflow
 
 1. **Prepare Data:** Export protein groups from DIA-NN as TSV
 2. **Upload Files:** Use web app or desktop GUI
@@ -98,7 +98,7 @@ BYU-Core-MS-Lab/
    - Compare organisms against HeLa median
 4. **Export:** Save plots for reporting
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -111,23 +111,23 @@ pip install -e ".[dev]"
 pytest tests/
 ```
 
-## 📖 Documentation
+## Documentation
 
 - [FA Workflow Tutorial](tutorials/FA_Workflow_Tutorial.md)
 - [Web App README](programs/mspp_web/README.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
-## 🔗 Links
+## Links
 
 - **GitHub:** [MSCoreLab/BYU-Core-MS-Lab](https://github.com/MSCoreLab/BYU-Core-MS-Lab)
 - **BYU MS Core Facility:** [Fritz B. Burns Cancer Research Center](https://lifesciences.byu.edu/burns-cancer-center)
 
-## ✨ Recent Updates
+## Recent Updates
 
 - ✅ Web application with React + TypeScript frontend
 - ✅ Performance optimizations (5-10x faster on cached data)
