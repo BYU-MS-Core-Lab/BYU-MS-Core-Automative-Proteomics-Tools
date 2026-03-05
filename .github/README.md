@@ -13,7 +13,7 @@ This repository contains workflows and tools for bottom-up proteomics analysis, 
 ## Quick Start
 
 ### Prerequisites
-- Python 3.10+ ([Download](https://www.python.org/downloads/))
+- Python 3.10+ ([Download](https://www.python.org/downloads/)) - 3.14+ recommended
 - Node.js 18+ ([Download](https://nodejs.org/)) - only for web app
 
 ### Installation
@@ -29,10 +29,10 @@ This repository contains workflows and tools for bottom-up proteomics analysis, 
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-# 2. Install dependencies (choose one):
-pip install -r requirements.txt           # Production only
+# 2. Install dependencies:
 pip install -e ".[dev]"                   # With dev tools (Ruff, pytest)
-pip install -e ".[dev,jupyter]"           # With Jupyter support
+# Or for Jupyter notebook support:
+pip install -e ".[dev,jupyter]"
 
 # 3. (Optional) Install web app frontend
 cd programs/mspp_web/frontend
@@ -57,20 +57,20 @@ Modern web-based interface for proteomics data visualization.
 python programs/mspp_web/launch_app.py
 ```
 
-### MSPP Data Plotter (Desktop)
-Tkinter-based desktop GUI with the same analysis capabilities.
+### Python Tools
+Additional analysis and data processing tools available in the `programs/python/` directory.
+
+**Available Tools:**
+- `filter_fasta_gui.py` - GUI tool for filtering FASTA files by organism patterns
+- `MSPP_data_analysis.ipynb` - Jupyter notebook for advanced data analysis
 
 **Run:**
 ```powershell
-python programs/pyscripts/MSPP_data_plotter.py
-```
+# FASTA Filter GUI
+python programs/python/filter_fasta_gui.py
 
-### FASTA Filter GUI
-Tool for filtering FASTA files by organism patterns.
-
-**Run:**
-```powershell
-python programs/pyscripts/filter_fasta_gui.py
+# Launch Jupyter notebook
+jupyter notebook programs/python/MSPP_data_analysis.ipynb
 ```
 
 ## Repository Structure
@@ -78,14 +78,14 @@ python programs/pyscripts/filter_fasta_gui.py
 ```
 BYU-Core-MS-Lab/
 ├── programs/              # Analysis tools
-│   ├── mspp_web/         # Web application (React + Flask)
-│   └── pyscripts/        # Desktop GUI tools
+│   ├── mspp_web/         # Web application (Flask backend + React frontend)
+│   └── python/           # Python tools and scripts
 ├── tutorials/            # Workflow tutorials
-├── literature/           # Reference literature
-├── documentations/       # Technical documentation
-├── scripts/              # Setup and utility scripts
-├── requirements.txt      # Python dependencies
-└── pyproject.toml        # Project metadata
+├── documentations/       # Documentation and reference materials
+├── scripts/              # Development and setup scripts
+├── tests/                # Unit tests and debugging utilities
+├── pyproject.toml        # Project metadata and dependencies
+└── LICENSE               # Apache 2.0 License
 ```
 
 ## Typical Workflow
@@ -113,7 +113,7 @@ pytest tests/
 
 ## Documentation
 
-- [FA Workflow Tutorial](tutorials/FA_Workflow_Tutorial.md)
+- [FA Workflow Tutorial](tutorials/FA_Workflow_Tutorial/FA_Workflow_Tutorial.qmd)
 - [Web App README](programs/mspp_web/README.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
@@ -129,10 +129,12 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 ## Recent Updates
 
-- ✅ Web application with React + TypeScript frontend
-- ✅ Performance optimizations (5-10x faster on cached data)
-- ✅ Grouped fold change analysis with pattern matching
-- ✅ Dark mode UI for all visualizations
+- Web application with React + TypeScript frontend
+- Performance optimizations (5-10x faster on cached data)
+- Grouped fold change analysis with pattern matching
+- Dark mode UI for all visualizations
+- Python 3.14 support
+- Enhanced documentation and development setup
 
 See [CHANGELOG.md](CHANGELOG.md) for full history.
 
