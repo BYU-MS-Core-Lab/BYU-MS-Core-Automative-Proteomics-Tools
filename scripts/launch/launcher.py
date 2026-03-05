@@ -15,11 +15,59 @@ import sys
 import webbrowser
 from pathlib import Path
 
-# Add backend to path
-backend_path = Path(__file__).parent / 'programs' / 'mspp_web' / 'backend'
+# Validate Python environment before importing Flask
+def validate_python_environment():
+    """Check if Python environment is properly configured."""
+    try:
+        # Try importing standard library modules that are essential
+        import encodings
+        import json
+        import sys as sys_test
+    except ModuleNotFoundError as e:
+        print("\n" + "=" * 60)
+        print("ERROR: Python environment is not properly configured!")
+        print("=" * 60)
+        print(f"\nMissing module: {e.name}")
+        print("\nThis usually means:")
+        print("  1. Python installation is corrupted")
+        print("  2. Virtual environment wasn't activated properly")
+        print("  3. System Python is broken")
+        print("\nSolution:")
+        print("\nRun one of these setup commands:")
+        print("\n  Windows (PowerShell):")
+        print("    .\\scripts\\setup_dev.ps1")
+        print("\n  macOS/Linux (Bash):")
+        print("    bash scripts/setup_dev.sh")
+        print("\n  Any Platform (Python):")
+        print("    python scripts/setup_dev.py")
+        print("\nOr manually create/activate a virtual environment:")
+        print("  python -m venv .venv")
+        print("  .venv\\Scripts\\activate.bat  # Windows")
+        print("  source .venv/bin/activate    # macOS/Linux")
+        print("  pip install -e '.[dev]'")
+        print("\n" + "=" * 60 + "\n")
+        sys.exit(1)
+
+# Validate environment early
+validate_python_environment()
+
+# Now safe to import Flask and other modules
+# Add backend to path (adjust for location in scripts/launch/)
+project_root = Path(__file__).parent.parent.parent
+backend_path = project_root / 'programs' / 'mspp_web' / 'backend'
 sys.path.insert(0, str(backend_path))
 
-from app import app
+try:
+    from app import app
+except ImportError as e:
+    print("\n" + "=" * 60)
+    print("ERROR: Failed to import Flask application!")
+    print("=" * 60)
+    print(f"\n{e}")
+    print("\nMake sure dependencies are installed:")
+    print("  pip install -e '.[dev]'")
+    print("\n" + "=" * 60 + "\n")
+    sys.exit(1)
 
 
 def main():
@@ -29,9 +77,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python launcher.py                # Run in development mode
-  python launcher.py --prod         # Run in production mode
-  python launcher.py --dev          # Explicitly run in development mode (same as default)
+  python scripts/launch/launcher.py                # Run in development mode
+  python scripts/launch/launcher.py --prod         # Run in production mode
+  python scripts/launch/launcher.py --dev          # Explicitly run in development mode (same as default)
 
 Environment Variables:
   FLASK_ENV      Set to 'development' or 'production'

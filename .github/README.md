@@ -46,26 +46,27 @@ npm install
 After setup, launch the web app using one of these methods:
 
 **Windows:**
-- **Development:** Double-click `Launch_MSPP_App.bat`
-- **Production:** Double-click `Launch_MSPP_App_Prod.bat`
+- **Development:** Double-click `scripts/launch/Launch_MSPP_App.bat`
+- **Production:** Double-click `scripts/launch/Launch_MSPP_App_Prod.bat`
 
 **macOS/Linux:**
 ```bash
 # Development mode (with debugging)
-chmod +x Launch_MSPP_App.sh
-./Launch_MSPP_App.sh
+chmod +x scripts/launch/Launch_MSPP_App.sh
+chmod +x scripts/launch/Launch_MSPP_App_Prod.sh
+./scripts/launch/Launch_MSPP_App.sh
 
 # Production mode (optimized)
-./Launch_MSPP_App_Prod.sh
+./scripts/launch/Launch_MSPP_App_Prod.sh
 ```
 
 **Any Platform (Python):**
 ```bash
 # Development mode (default)
-python launcher.py
+python scripts/launch/launcher.py
 
 # Production mode
-python launcher.py --prod
+python scripts/launch/launcher.py --prod
 ```
 
 The launchers automatically find your Python environment and open the app at `http://localhost:5000`.
@@ -174,6 +175,16 @@ BYU-Core-MS-Lab/
    - Validate spike-in ratios (E.coli vs Yeast)
    - Compare organisms against HeLa median
 4. **Export:** Save plots for reporting
+
+## Troubleshooting
+
+Encountered an issue? Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common problems and solutions:
+- Python not found or broken installation
+- Port already in use
+- Missing dependencies
+- Virtual environment issues
+- CORS errors
+- And more...
 
 ## Contributing
 

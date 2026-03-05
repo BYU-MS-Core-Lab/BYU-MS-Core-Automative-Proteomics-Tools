@@ -5,9 +5,9 @@
 
 set -e  # Exit on error
 
-# Navigate to project directory
+# Navigate to project directory (from scripts/launch, go up 2 levels)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+cd "$SCRIPT_DIR/../.."
 
 echo "==============================================================="
 echo "Starting MSPP Data Plotter (Production Mode)"
@@ -45,7 +45,7 @@ echo "Launching web app on http://localhost:5000 (production mode)"
 echo ""
 
 # Run the launcher
-"$PYTHON_EXE" programs/mspp_web/launch_app.py
+"$PYTHON_EXE" scripts/launch/launcher.py --prod
 
 echo ""
 echo "App terminated."

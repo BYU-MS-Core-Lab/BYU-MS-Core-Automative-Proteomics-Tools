@@ -71,35 +71,35 @@ Thank you for your interest in contributing to our mass spectrometry analysis to
 The easiest way to run the web app locally - just double-click the appropriate launcher script:
 
 **Windows (Development):**
-- Double-click: `Launch_MSPP_App.bat`
+- Double-click: `scripts/launch/Launch_MSPP_App.bat`
 - Sets `FLASK_ENV=development` for debugging
 
 **Windows (Production):**
-- Double-click: `Launch_MSPP_App_Prod.bat`
+- Double-click: `scripts/launch/Launch_MSPP_App_Prod.bat`
 - Sets `FLASK_ENV=production` for optimized performance
 
 **macOS/Linux (Development):**
 ```bash
-chmod +x Launch_MSPP_App.sh
-./Launch_MSPP_App.sh
+chmod +x scripts/launch/Launch_MSPP_App.sh
+./scripts/launch/Launch_MSPP_App.sh
 ```
 
 **macOS/Linux (Production):**
 ```bash
-chmod +x Launch_MSPP_App_Prod.sh
-./Launch_MSPP_App_Prod.sh
+chmod +x scripts/launch/Launch_MSPP_App_Prod.sh
+./scripts/launch/Launch_MSPP_App_Prod.sh
 ```
 
 **Cross-Platform Python Launcher (Any OS):**
 ```bash
 # Development mode (default, with debugging)
-python launcher.py
+python scripts/launch/launcher.py
 
 # Production mode (optimized, no debugging)
-python launcher.py --prod
+python scripts/launch/launcher.py --prod
 
 # Show help
-python launcher.py --help
+python scripts/launch/launcher.py --help
 ```
 
 The launchers automatically:
@@ -311,6 +311,31 @@ BYU-Core-MS-Lab/
    - Provide clear description of changes
    - Reference any related issues
    - Wait for review
+
+## Troubleshooting
+
+If you encounter issues during setup or development:
+
+1. **Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions:
+   - Python environment problems (missing modules, encoding errors)
+   - Port conflicts
+   - Dependency installation issues
+   - Virtual environment activation
+   - Frontend/backend communication issues
+
+2. **Run the setup script** - Resolves most environment issues:
+   ```bash
+   # Windows
+   .\scripts\setup_dev.ps1
+   
+   # macOS/Linux
+   ./scripts/setup_dev.sh
+   
+   # Any platform
+   python scripts/setup_dev.py
+   ```
+
+3. **Check the launcher output** - The app launchers provide helpful diagnostic messages if something goes wrong
 
 ## Questions?
 
