@@ -155,7 +155,17 @@ Environment Variables:
     browser_thread.start()
 
     try:
-        app.run(host=host, port=port, debug=debug, use_reloader=False, threaded=True)
+        if is_production:
+            try:
+                from waitress import serve
+                print(f"Using Waitress (production WSGI server) on {host}:{port}")
+                serve(app, host=host, port=port, threads=8)
+            except ImportError:
+                print("\nWARNING: 'waitress' not found. Falling back to development server.")
+                print("To fix: pip install waitress")
+                app.run(host=host, port=port, debug=False, use_reloader=False, threaded=True)
+        else:
+            app.run(host=host, port=port, debug=debug, use_reloader=False, threaded=True)
     except KeyboardInterrupt:
         print("\n\nApp stopped by user.")
         sys.exit(0)

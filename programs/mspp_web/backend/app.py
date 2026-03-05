@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 # Force correct MIME types to ensure Vite/React assets load correctly in all environments
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('text/html', '.html')
 
 # Cross-platform path handling: use Path() for proper OS-specific path resolution
 BACKEND_DIR = Path(__file__).parent
@@ -69,7 +70,7 @@ uploaded_files = {}
 @app.before_request
 def log_request():
     """Log incoming requests for debugging."""
-    logger.debug(f"Request: {request.method} {request.path}")
+    logger.info(f"Request: {request.method} {request.path}")
 
 @app.after_request
 def add_security_headers(response):
@@ -82,12 +83,14 @@ def add_security_headers(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
-    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:;"
+    # Adjusted CSP to be slightly more permissive for corporate environments while remaining secure
+    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data: blob:;"
     return response
 
 @app.route('/')
 def serve_react_app():
     """Serves the compiled React frontend from the /dist folder."""
+    logger.info(f"Serving index.html from {app.static_folder}")
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/<path:path>')
@@ -96,11 +99,18 @@ def serve_static_files(path):
     # Try to serve the file if it exists
     full_path = Path(app.static_folder) / path
     if full_path.exists() and full_path.is_file():
+        # Log asset serving to help debug grey screen
+        mime_type, _ = mimetypes.guess_type(str(full_path))
+        logger.info(f"Serving asset: {path} (MIME: {mime_type})")
         return send_from_directory(app.static_folder, path)
+    
     # If file doesn't exist and it's not an API route, serve index.html for React Router
     if not path.startswith('api/'):
+        logger.info(f"Path not found, falling back to index.html: {path}")
         return send_from_directory(app.static_folder, 'index.html')
+    
     # 404 for missing API routes
+    logger.warning(f"API route not found: {path}")
     return jsonify({'error': 'Not found'}), 404
 
 @app.route('/api/health')
