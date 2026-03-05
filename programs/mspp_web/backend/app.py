@@ -5,10 +5,6 @@ MSPP Data Plotter - Flask Backend API
 This module serves as the web interface for the Mixed Species Proteomics Performance (MSPP) tool.
 It handles file uploads, session state management for uploaded proteomics data, and provides
 RESTful endpoints for generating and exporting analytical visualizations.
-
-Architecture:
-- app.py: Handles HTTP requests, file persistence, and routing.
-- logic.py: Contains heavy-lifting data processing and plotting logic.
 """
 
 import contextlib
@@ -38,22 +34,16 @@ mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 mimetypes.add_type('text/html', '.html')
 
-# Cross-platform path handling: use Path() for proper OS-specific path resolution
-BACKEND_DIR = Path(__file__).parent
-STATIC_FOLDER = str(BACKEND_DIR.parent / 'frontend' / 'dist')
+# Cross-platform path handling
+BACKEND_DIR = Path(__file__).parent.absolute()
+# The 'dist' folder is up one level in the 'frontend' directory
+STATIC_FOLDER = (BACKEND_DIR.parent / 'frontend' / 'dist').absolute()
 TEMP_DIR = Path(os.getenv('MSPP_TEMP_DIR', tempfile.gettempdir()))
 
-# Verify static folder exists
-if not Path(STATIC_FOLDER).exists():
-    logger.warning(f"Static folder not found: {STATIC_FOLDER}")
-else:
-    logger.info(f"Static folder found: {STATIC_FOLDER}")
-    logger.info(f"  - index.html exists: {Path(STATIC_FOLDER, 'index.html').exists()}")
-    logger.info(f"  - assets folder exists: {Path(STATIC_FOLDER, 'assets').exists()}")
+# Initialize Flask without an automatic static folder to avoid path conflicts
+app = Flask(__name__, static_folder=None)
 
-app = Flask(__name__, static_folder=STATIC_FOLDER, static_url_path='')
-
-# Configure CORS with environment-based origins for flexibility
+# Configure CORS
 cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5000').split(',')
 cors_config = {
     'origins': [origin.strip() for origin in cors_origins],
@@ -61,8 +51,7 @@ cors_config = {
 }
 CORS(app, resources={r'/api/*': cors_config})
 
-# Global instances shared across the session
-# Note: In a multi-user production environment, these should be session-scoped or stateless.
+# Global instances
 processor = DataProcessor()
 plotter = PlotGenerator(processor)
 uploaded_files = {}
@@ -74,60 +63,52 @@ def log_request():
 
 @app.after_request
 def add_security_headers(response):
-    """
-    Middleware to inject security and performance-related headers into every response.
-    - Cache-Control: Prevents browsers from caching sensitive proteomics data.
-    - CSP: Restricts resource loading to 'self' while allowing data: URIs for base64 plots.
-    """
-    logger.debug(f"Response: {request.path} -> {response.status_code}")
+    """Inject security and performance-related headers."""
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
-    # Adjusted CSP to be slightly more permissive for corporate environments while remaining secure
-    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data: blob:;"
+    # Removed CSP header to prevent blocking legitimate React assets/scripts
     return response
 
-@app.route('/')
-def serve_react_app():
-    """Serves the compiled React frontend from the /dist folder."""
-    logger.info(f"Serving index.html from {app.static_folder}")
-    return send_from_directory(app.static_folder, 'index.html')
-
+@app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve_static_files(path):
-    """Serves static files (JS, CSS, images, etc.) from the dist folder."""
-    # Normalize path for Windows: replace forward slashes with OS-specific separator
-    normalized_path = os.path.normpath(path)
-    full_path = Path(app.static_folder) / normalized_path
-    
-    logger.debug(f"Attempting to serve asset: {path} -> Resolved to: {full_path}")
+def catch_all(path):
+    """
+    Catch-all route that serves the React app and its assets.
+    """
+    # Normalize path: browsers use forward slashes, Windows uses backslashes
+    # We always use forward slashes for the internal Flask serving
+    if not path or path == '/':
+        target_file = 'index.html'
+    else:
+        target_file = path
 
-    # Try to serve the file if it exists
+    # Check if the file exists on the physical disk
+    full_path = (STATIC_FOLDER / target_file.replace('/', os.sep)).absolute()
+    
     if full_path.exists() and full_path.is_file():
         mime_type, _ = mimetypes.guess_type(str(full_path))
-        logger.info(f"Serving asset: {path} (MIME: {mime_type})")
-        return send_from_directory(app.static_folder, normalized_path)
+        logger.info(f"Serving asset: {target_file} (MIME: {mime_type})")
+        # Flask's send_from_directory handles the path correctly if we give it the relative path
+        return send_from_directory(str(STATIC_FOLDER), target_file)
     
-    # If file doesn't exist and it's not an API route, serve index.html for React Router
-    if not path.startswith('api/'):
-        logger.info(f"Asset not found, falling back to index.html: {path} (Looked in: {full_path})")
-        return send_from_directory(app.static_folder, 'index.html')
-    
-    # 404 for missing API routes
-    logger.warning(f"API route not found: {path}")
-    return jsonify({'error': 'Not found'}), 404
+    # If the path is an API call, return 404
+    if path.startswith('api/'):
+        logger.warning(f"API Route Not Found: {path}")
+        return jsonify({'error': 'API endpoint not found'}), 404
+        
+    # Fallback to index.html for all other routes (React Router support)
+    logger.info(f"Path not found, falling back to index.html: {path}")
+    return send_from_directory(str(STATIC_FOLDER), 'index.html')
 
 @app.route('/api/health')
 def health_check():
-    """Simple health check endpoint for monitoring or readiness probes."""
+    """Simple health check endpoint."""
     return jsonify({'status': 'ok'})
 
 @app.route('/api/upload', methods=['POST'])
 def upload_files():
-    """
-    Handles multi-file TSV/TXT uploads.
-    Saves files to a temporary directory and tracks their paths in memory.
-    """
+    """Handles multi-file TSV/TXT uploads."""
     if 'files' not in request.files:
         return jsonify({'error': 'No files provided'}), 400
 
@@ -136,9 +117,7 @@ def upload_files():
 
     for file in files:
         if file and file.filename and file.filename.lower().endswith(('.tsv', '.txt')):
-            # SECURITY: Use secure_filename to prevent directory traversal attacks
             safe_name = secure_filename(file.filename)
-            # Use cross-platform TEMP_DIR variable instead of hardcoded path
             temp_path = TEMP_DIR / safe_name
             temp_path.parent.mkdir(parents=True, exist_ok=True)
             file.save(temp_path)
@@ -153,16 +132,12 @@ def upload_files():
 
 @app.route('/api/files', methods=['GET', 'DELETE'])
 def manage_files():
-    """
-    GET: Returns a list of currently tracked filenames.
-    DELETE: Cleans up temporary files from disk and resets internal state/cache.
-    """
+    """Manage uploaded files."""
     if request.method == 'DELETE':
         for path in uploaded_files.values():
             with contextlib.suppress(Exception):
                 Path(path).unlink(missing_ok=True)
         uploaded_files.clear()
-        # Ensure the processor cache is wiped when files are deleted
         if hasattr(processor, 'cached_data'):
             processor.cached_data = None
             processor.cached_file_list = []
@@ -171,13 +146,7 @@ def manage_files():
 
 @app.route('/api/plot/<chart_type>', methods=['POST'])
 def generate_plot(chart_type):
-    """
-    Generates a visualization and returns it as a base64 encoded string for UI rendering.
-
-    Supported chart_types:
-    - 'bar-chart': Protein ID distribution across organisms.
-    - 'sample-comparison': Log2 intensity ratio boxplots.
-    """
+    """Generates a visualization."""
     if not uploaded_files:
         return jsonify({'error': 'No files uploaded'}), 400
 
@@ -197,10 +166,7 @@ def generate_plot(chart_type):
 
 @app.route('/api/export/<chart_type>', methods=['POST'])
 def export_plot(chart_type):
-    """
-    Generates a high-resolution version of the requested plot and triggers a browser download.
-    Uses 300 DPI for publication-quality output.
-    """
+    """Exports a plot to PNG."""
     if not uploaded_files:
         return jsonify({'error': 'No files uploaded'}), 400
 
@@ -216,7 +182,6 @@ def export_plot(chart_type):
             return jsonify({'error': 'Invalid plot type'}), 400
 
         buf = io.BytesIO()
-        # Save with high DPI for exporting to documents/presentations
         fig.savefig(buf, format='png', dpi=300, bbox_inches='tight')
         buf.seek(0)
         return send_file(buf, mimetype='image/png', as_attachment=True, download_name=name)
@@ -225,7 +190,6 @@ def export_plot(chart_type):
         return jsonify({'error': 'Export failed due to an internal error.'}), 500
 
 if __name__ == "__main__":
-    # Cross-platform configuration via environment variables
     port = int(os.getenv('FLASK_PORT', '5000'))
     host = os.getenv('FLASK_HOST', '127.0.0.1')
     debug_mode = os.getenv('FLASK_ENV', 'production').lower() in ('development', 'debug')
