@@ -44,9 +44,9 @@ desktop.ini
 .cache/
 
 # Data files (uncomment patterns as needed)
-# *.raw
-# *.mzML
-# *.mzXML
+*.raw
+*.mzML
+*.mzXML
 
 # Keep frontend build for deployment
 !programs/mspp_web/frontend/dist/# pixi environments
