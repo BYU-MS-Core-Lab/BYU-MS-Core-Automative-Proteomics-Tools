@@ -406,33 +406,6 @@ Result: 2 conditions (E100, E25) × 24 samples each ✅
 
 💡 **Pro tip:** Keep a backup of the original file before making changes. You can create multiple versions with different condition groupings to explore different biological questions from the same dataset.
 
-**Example Python code to automate this process (you may need to change str.extract & alias for your own samples):**
-
-```{python}
-import polars as pl
-
-# Read the annotation file
-df = pl.read_csv("experiment.annotation.tsv", separator="\t")
-
-# Extract experimental factor from filename (e.g., E100 or E25)
-df = df.with_columns([
-    pl.col("file").str.extract(r"(E\d+)", 1).alias("ecoli_conc")
-])
-
-# Create unique sample names
-df = df.with_columns([
-    (pl.col("ecoli_conc") + "_" + pl.col("sample_name")).alias("sample_name")
-])
-
-# Simplify condition to just the factor of interest
-df = df.with_columns([
-    pl.col("ecoli_conc").alias("condition")
-])
-
-# Save the corrected file
-df.write_csv("experiment.annotation.tsv", separator="\t")
-```
-
 After making these modifications, your file is ready for upload:
 
 ![Modified experiment.annotation.tsv](./screenshots/Step_27.png)
