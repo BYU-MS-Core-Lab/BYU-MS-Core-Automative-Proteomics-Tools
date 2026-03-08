@@ -1,8 +1,6 @@
 ---
 format:
   pdf:
-    toc: true
-    number-sections: true
     mainfont: Atkinson Hyperlegible Next
     fontsize: 13pt
 ---
