@@ -16,36 +16,89 @@
 *.exe
 *.dll
 *.msi
+*.so
+*.log
 *.tsv
-*.csv
 
 # Python
 __pycache__/
-*.env
 *.pyc
 *.pyo
 *.pyd
-*.so
 *.egg
 *.egg-info/
-*.log
 .pytest_cache/
-.coverage
 .Python
 .env/
 .venv/
-.pixi/
 bin/
 dist/
 build/
 out/
 target/
-dist/
-build/
 htmlcov/
 
-# Ruff
-.ruff_cache/
+# Bioinformatics data files
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.bam.bai
+*.sam
+*.vcf
+*.vcf.gz
+*.bed
+*.gtf
+*.gff
+*.gff3
+*.fasta
+*.fa
+*.fai
+*.h5
+*.hdf5
+*.loom
+*.h5ad
+results/
+data/raw/
+
+# Conda/Mamba
+.conda/
+envs/
+*.conda
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+profile_default/
+ipython_config.py
+
+# Secrets
+*.env
+.env.*
+secrets/
+credentials/
+*.pem
+*.key
+config/local_settings.py
+
+# Snakemake
+.snakemake/
+snakemake_log/
+
+# Nextflow
+.nextflow/
+.nextflow.log*
+work/
+
+# Testing
+.coverage
+.tox/
+.hypothesis/
+nosetests.xml
+coverage.xml
+*.cover
+.coverage.*
 
 # Node.js
 node_modules/
@@ -75,11 +128,12 @@ desktop.ini
 *.mzML
 *.mzXML
 
-# Keep frontend build for deployment
-!programs/mspp_web/frontend/dist/# pixi environments
-.pixi/*
-!.pixi/config.toml
-
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+# Ruff
+.ruff_cache/
+
+# MS Office temp files
+~$*
