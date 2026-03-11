@@ -234,7 +234,7 @@ function App() {
                 className="btn btn-plot"
               >
                 <TrendingUp size={20} />
-                Sample Intensity Comparison (E25 vs E100)
+                Sample Intensity Comparison
               </button>
 
               <button
