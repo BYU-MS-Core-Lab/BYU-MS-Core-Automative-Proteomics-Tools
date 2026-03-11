@@ -44,6 +44,7 @@ from pathlib import Path
 try:
     import tkinter as tk
     from tkinter import filedialog, messagebox, ttk
+
     GUI_AVAILABLE = True
 except ImportError:
     # GUI dependencies not available (e.g. headless server)
@@ -58,6 +59,7 @@ class FastaEntry:
         header: The header line including leading '>'
         sequence_lines: List of sequence lines (preserves original formatting)
     """
+
     header: str
     sequence_lines: list[str]
 
@@ -238,6 +240,7 @@ class RegexMatcher(PatternMatcher):
 @dataclass
 class FilterStats:
     """Statistics from filtering operation."""
+
     kept: int = 0
     removed: int = 0
     removed_headers: list[str] = field(default_factory=list)
@@ -246,6 +249,7 @@ class FilterStats:
 @dataclass
 class MergeStats:
     """Statistics from merge operation."""
+
     total_entries: int = 0
     written_entries: int = 0
     skipped_duplicates: int = 0
@@ -275,7 +279,8 @@ class FastaFilter:
 
         # * Use Strategy pattern to select matcher implementation
         self.matcher = (
-            RegexMatcher(patterns, case_sensitive) if use_regex
+            RegexMatcher(patterns, case_sensitive)
+            if use_regex
             else SubstringMatcher(patterns, case_sensitive)
         )
         # * Store configuration for report generation
@@ -313,7 +318,9 @@ class FastaFilter:
 
         return stats
 
-    def save_report(self, input_path: Path, output_path: Path, stats: FilterStats, report_path: Path):
+    def save_report(
+        self, input_path: Path, output_path: Path, stats: FilterStats, report_path: Path
+    ):
         """Save filtering report to file."""
         with report_path.open("w", encoding="utf-8") as rep:
             rep.write(f"Input:  {input_path}\n")
@@ -479,6 +486,7 @@ class FastaMerger:
 
 
 if GUI_AVAILABLE:
+
     class App(tk.Tk):
         # Class constants
         FASTA_FILETYPES = [
@@ -556,7 +564,10 @@ if GUI_AVAILABLE:
             style.map("TButton", background=[("active", self.DARK_HIGHLIGHT)])
             style.configure("TNotebook", background=self.DARK_BG, borderwidth=0)
             style.configure(
-                "TNotebook.Tab", background=self.DARK_ACCENT, foreground=self.DARK_FG, padding=[10, 5]
+                "TNotebook.Tab",
+                background=self.DARK_ACCENT,
+                foreground=self.DARK_FG,
+                padding=[10, 5],
             )
             style.map(
                 "TNotebook.Tab",
@@ -663,20 +674,24 @@ if GUI_AVAILABLE:
             )
 
             # Row 2: Output
-            self._add_file_row(frm, "Output merged FASTA:", self.merge_output_var, self.choose_merge_output)
+            self._add_file_row(
+                frm, "Output merged FASTA:", self.merge_output_var, self.choose_merge_output
+            )
 
             # Row 3: Options
             row3 = ttk.Frame(frm)
             row3.pack(fill="x")
 
             ttk.Label(row3, text="Deduplication:").pack(side="left", padx=(0, 6))
-            ttk.Radiobutton(row3, text="None", variable=self.dedupe_var, value="none").pack(side="left")
+            ttk.Radiobutton(row3, text="None", variable=self.dedupe_var, value="none").pack(
+                side="left"
+            )
             ttk.Radiobutton(row3, text="By Header", variable=self.dedupe_var, value="header").pack(
                 side="left"
             )
-            ttk.Radiobutton(row3, text="By Sequence", variable=self.dedupe_var, value="sequence").pack(
-                side="left"
-            )
+            ttk.Radiobutton(
+                row3, text="By Sequence", variable=self.dedupe_var, value="sequence"
+            ).pack(side="left")
 
             # Row 4: More options
             row4 = ttk.Frame(frm)
@@ -684,9 +699,9 @@ if GUI_AVAILABLE:
             ttk.Checkbutton(row4, text="Add file prefix to headers", variable=self.prefix_var).pack(
                 side="left"
             )
-            ttk.Checkbutton(row4, text="Save merge report (.txt)", variable=self.merge_report_var).pack(
-                side="left"
-            )
+            ttk.Checkbutton(
+                row4, text="Save merge report (.txt)", variable=self.merge_report_var
+            ).pack(side="left")
 
             # Row 5: Actions
             row5 = ttk.Frame(frm)
@@ -821,7 +836,7 @@ if GUI_AVAILABLE:
                 fasta_filter = FastaFilter(
                     patterns=patterns,
                     use_regex=self.regex_var.get(),
-                    case_sensitive=self.case_var.get()
+                    case_sensitive=self.case_var.get(),
                 )
 
                 stats = fasta_filter.filter_file(input_path, output_path)
@@ -864,8 +879,7 @@ if GUI_AVAILABLE:
 
                 # * Create merger and process files
                 merger = FastaMerger(
-                    deduplicate=self.dedupe_var.get(),
-                    add_prefix=self.prefix_var.get()
+                    deduplicate=self.dedupe_var.get(), add_prefix=self.prefix_var.get()
                 )
 
                 stats = merger.merge_files(self.merge_files, output_path)
@@ -925,9 +939,7 @@ def main():
 
         # * Create filter and process
         fasta_filter = FastaFilter(
-            patterns=patterns,
-            use_regex=args.regex,
-            case_sensitive=args.case
+            patterns=patterns, use_regex=args.regex, case_sensitive=args.case
         )
 
         stats = fasta_filter.filter_file(input_path, output_path)
@@ -948,7 +960,9 @@ def main():
         else:
             print("Error: GUI dependencies (tkinter) not found.")
             print("Please provide input, output, and patterns arguments to run in CLI mode.")
-            print("Usage: python filter_fasta_gui.py <input> <output> <patterns> [--regex] [--case] [--report]")
+            print(
+                "Usage: python filter_fasta_gui.py <input> <output> <patterns> [--regex] [--case] [--report]"
+            )
 
 
 if __name__ == "__main__":

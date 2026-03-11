@@ -15,6 +15,7 @@ import sys
 import webbrowser
 from pathlib import Path
 
+
 # Validate Python environment before importing Flask
 def validate_python_environment():
     """Check if Python environment is properly configured."""
@@ -48,13 +49,14 @@ def validate_python_environment():
         print("\n" + "=" * 60 + "\n")
         sys.exit(1)
 
+
 # Validate environment early
 validate_python_environment()
 
 # Now safe to import Flask and other modules
 # Setup Python path for proper module importing
 project_root = Path(__file__).parent.parent.parent
-backend_parent = project_root / 'programs' / 'mspp_web'
+backend_parent = project_root / "programs" / "mspp_web"
 
 # Add the parent directory so 'backend' can be imported as a package
 sys.path.insert(0, str(backend_parent))
@@ -78,7 +80,7 @@ except ImportError as e:
 def main():
     """Parse arguments and launch the app with appropriate configuration."""
     parser = argparse.ArgumentParser(
-        description='MSPP Data Plotter - Launch the application',
+        description="MSPP Data Plotter - Launch the application",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -90,35 +92,37 @@ Environment Variables:
   FLASK_ENV      Set to 'development' or 'production'
   FLASK_HOST     Bind address (default: 127.0.0.1)
   FLASK_PORT     Port number (default: 5000)
-"""
+""",
     )
 
     # Add mutually exclusive group for mode selection
     mode_group = parser.add_mutually_exclusive_group()
     mode_group.add_argument(
-        '--prod', '--production',
-        dest='mode',
-        action='store_const',
-        const='production',
-        help='Run in production mode (no debugging)'
+        "--prod",
+        "--production",
+        dest="mode",
+        action="store_const",
+        const="production",
+        help="Run in production mode (no debugging)",
     )
     mode_group.add_argument(
-        '--dev', '--development',
-        dest='mode',
-        action='store_const',
-        const='development',
-        help='Run in development mode with debugging (default)'
+        "--dev",
+        "--development",
+        dest="mode",
+        action="store_const",
+        const="development",
+        help="Run in development mode with debugging (default)",
     )
 
     args = parser.parse_args()
 
     # Determine mode from argument or environment variable
-    mode = args.mode or os.getenv('FLASK_ENV', 'development')
-    is_production = mode.lower() in ('production', 'prod')
+    mode = args.mode or os.getenv("FLASK_ENV", "development")
+    is_production = mode.lower() in ("production", "prod")
 
     # Get configuration from environment or use defaults
-    host = os.getenv('FLASK_HOST', '127.0.0.1')
-    port = int(os.getenv('FLASK_PORT', '5000'))
+    host = os.getenv("FLASK_HOST", "127.0.0.1")
+    port = int(os.getenv("FLASK_PORT", "5000"))
     debug = not is_production
 
     # Print startup information
@@ -135,11 +139,11 @@ Environment Variables:
     # Start Flask server
     print("Starting backend server...")
     print("")
-    
+
     # Open browser after a short delay to allow server to start
     import threading
     import time
-    
+
     def open_browser():
         time.sleep(2)  # Wait for server to start
         url = f"http://{host}:{port}"
@@ -149,7 +153,7 @@ Environment Variables:
         except Exception as e:
             print(f"Could not open browser automatically: {e}")
             print(f"Please manually visit: {url}")
-    
+
     # Start browser in background thread
     browser_thread = threading.Thread(target=open_browser, daemon=True)
     browser_thread.start()
@@ -158,6 +162,7 @@ Environment Variables:
         if is_production:
             try:
                 from waitress import serve
+
                 print(f"Using Waitress (production WSGI server) on {host}:{port}")
                 serve(app, host=host, port=port, threads=8)
             except ImportError:
@@ -174,5 +179,5 @@ Environment Variables:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -9,7 +9,6 @@ Usage:
 
 import os
 import platform
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -17,6 +16,7 @@ from pathlib import Path
 
 class TerminalColors:
     """ANSI color codes for terminal output."""
+
     CYAN = "\033[36m"
     GREEN = "\033[32m"
     YELLOW = "\033[33m"
@@ -60,9 +60,7 @@ def print_warning(message: str) -> None:
     print(f"{TerminalColors.YELLOW}⚠️  {message}{TerminalColors.RESET}")
 
 
-def run_command(
-    cmd: list, description: str, silent: bool = False
-) -> tuple[bool, str]:
+def run_command(cmd: list, description: str, silent: bool = False) -> tuple[bool, str]:
     """
     Run a shell command and return success status.
 
@@ -96,8 +94,7 @@ def check_python_version() -> bool:
         return True
     else:
         print_warning(
-            f"Python 3.10+ recommended. Found: {version_str}\n"
-            f"          Continue anyway? (y/n): ",
+            f"Python 3.10+ recommended. Found: {version_str}\n          Continue anyway? (y/n): ",
             end="",
             flush=True,
         )
@@ -122,7 +119,9 @@ def create_venv() -> bool:
         print_success("Virtual environment created")
         return True
     else:
-        print(f"{TerminalColors.RED}❌ Failed to create virtual environment: {output}{TerminalColors.RESET}")
+        print(
+            f"{TerminalColors.RED}❌ Failed to create virtual environment: {output}{TerminalColors.RESET}"
+        )
         return False
 
 
@@ -166,7 +165,9 @@ def install_dependencies(python_exe: str) -> bool:
         print_success("Python dependencies installed")
         return True
     else:
-        print(f"{TerminalColors.RED}❌ Failed to install dependencies: {output}{TerminalColors.RESET}")
+        print(
+            f"{TerminalColors.RED}❌ Failed to install dependencies: {output}{TerminalColors.RESET}"
+        )
         return False
 
 
@@ -174,9 +175,7 @@ def check_nodejs() -> bool:
     """Check if Node.js is installed."""
     print_info("Checking Node.js...")
 
-    result = subprocess.run(
-        ["node", "--version"], capture_output=True, text=True
-    )
+    result = subprocess.run(["node", "--version"], capture_output=True, text=True)
     return result.returncode == 0
 
 
@@ -208,24 +207,28 @@ def print_next_steps() -> None:
     print(f"{TerminalColors.YELLOW}Next steps:{TerminalColors.RESET}")
 
     if system == "Windows":
-        print(f"  1. Activate environment: .venv\\Scripts\\Activate.ps1")
-        print(f"  2. Or use: .venv\\Scripts\\activate.bat (cmd.exe)")
+        print("  1. Activate environment: .venv\\Scripts\\Activate.ps1")
+        print("  2. Or use: .venv\\Scripts\\activate.bat (cmd.exe)")
     else:
-        print(f"  1. Activate environment: source .venv/bin/activate")
+        print("  1. Activate environment: source .venv/bin/activate")
 
-    print(f"  2. Run data analysis: python programs/python/MSPP_data_analysis.ipynb")
-    print(f"  3. Run web app:")
-    print(f"     Terminal 1: python programs/mspp_web/backend/app.py")
-    print(f"     Terminal 2: cd programs/mspp_web/frontend && npm run dev")
+    print("  2. Run data analysis: python programs/python/MSPP_data_analysis.ipynb")
+    print("  3. Run web app:")
+    print("     Terminal 1: python programs/mspp_web/backend/app.py")
+    print("     Terminal 2: cd programs/mspp_web/frontend && npm run dev")
 
-    print(f"\n{TerminalColors.CYAN}See CONTRIBUTING.md for development guidelines{TerminalColors.RESET}\n")
+    print(
+        f"\n{TerminalColors.CYAN}See CONTRIBUTING.md for development guidelines{TerminalColors.RESET}\n"
+    )
 
 
 def main() -> int:
     """Main setup routine."""
     TerminalColors.disable_on_windows()
 
-    print(f"\n{TerminalColors.CYAN}🔬 BYU MS Core Lab - Development Environment Setup{TerminalColors.RESET}")
+    print(
+        f"\n{TerminalColors.CYAN}🔬 BYU MS Core Lab - Development Environment Setup{TerminalColors.RESET}"
+    )
     print(f"{TerminalColors.CYAN}{'=' * 50}{TerminalColors.RESET}\n")
 
     # Check Python version
