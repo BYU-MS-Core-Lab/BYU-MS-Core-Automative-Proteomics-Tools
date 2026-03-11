@@ -120,7 +120,7 @@ def generate_plot(chart_type):
         return jsonify({'image': fig_to_base64(fig)})
     except Exception as e:
         logger.exception(f"Plot generation failed: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An internal error occurred while generating the plot.'}), 500
 
 if __name__ == "__main__":
     port = int(os.getenv('FLASK_PORT', '5000'))
