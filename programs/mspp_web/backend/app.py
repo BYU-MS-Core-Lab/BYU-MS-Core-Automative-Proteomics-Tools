@@ -63,9 +63,14 @@ def serve_index():
 def serve_static(path):
     """Serves static assets or falls back to index.html for React Router."""
     static_root = Path(app.static_folder).resolve()
-    full_path = static_root / path
+    # Normalize the user-supplied path to prevent directory traversal
+    safe_rel = os.path.normpath(path)
+    # Reject absolute paths or paths that attempt to escape the static root
+    if os.path.isabs(safe_rel) or safe_rel.startswith('..'):
+        return jsonify({'error': 'Not found'}), 404
+    full_path = static_root / safe_rel
     if is_within_directory(static_root, full_path) and full_path.is_file():
-        return send_from_directory(app.static_folder, path)
+        return send_from_directory(app.static_folder, safe_rel)
 
     # Fallback to index.html for client-side routing, unless it's an API call
     if not path.startswith('api/'):
