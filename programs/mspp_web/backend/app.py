@@ -173,7 +173,7 @@ def export_plot(chart_type):
             # Save them to memory buffers
             buf_bar = io.BytesIO()
             fig_bar.savefig(buf_bar, format='png', dpi=300, bbox_inches='tight')
-            
+
             buf_comp = io.BytesIO()
             fig_comp.savefig(buf_comp, format='png', dpi=300, bbox_inches='tight')
 
@@ -182,7 +182,7 @@ def export_plot(chart_type):
             with zipfile.ZipFile(zip_buf, 'w', zipfile.ZIP_DEFLATED) as zf:
                 zf.writestr('protein_id_bar_chart.png', buf_bar.getvalue())
                 zf.writestr('intensity_ratio_comparison.png', buf_comp.getvalue())
-            
+
             zip_buf.seek(0)
             return send_file(zip_buf, mimetype='application/zip', as_attachment=True, download_name='mspp_plots.zip')
 
