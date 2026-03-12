@@ -9,9 +9,10 @@ It is configured to serve the React frontend from the 'frontend/dist' directory.
 import logging
 import os
 import tempfile
+import zipfile
 from pathlib import Path
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
@@ -152,6 +153,55 @@ def generate_plot(chart_type):
     except Exception as e:
         logger.exception(f"Plot generation failed: {e}")
         return jsonify({"error": "An internal error occurred while generating the plot."}), 500
+
+
+@app.route('/api/export/<chart_type>', methods=['POST'])
+def export_plot(chart_type):
+    """Exports a plot to PNG or all plots to a ZIP archive."""
+    if not uploaded_files:
+        return jsonify({'error': 'No files uploaded'}), 400
+
+    try:
+        data = processor.load_data(list(uploaded_files.values()))
+        import io
+
+        if chart_type == 'all':
+            # Generate both figures
+            fig_bar = plotter.create_bar_chart_figure(data, figsize=(10, 6))
+            fig_comp = plotter.create_comparison_figure(data, figsize=(18, 16))
+
+            # Save them to memory buffers
+            buf_bar = io.BytesIO()
+            fig_bar.savefig(buf_bar, format='png', dpi=300, bbox_inches='tight')
+            
+            buf_comp = io.BytesIO()
+            fig_comp.savefig(buf_comp, format='png', dpi=300, bbox_inches='tight')
+
+            # Create a zip archive in memory
+            zip_buf = io.BytesIO()
+            with zipfile.ZipFile(zip_buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr('protein_id_bar_chart.png', buf_bar.getvalue())
+                zf.writestr('intensity_ratio_comparison.png', buf_comp.getvalue())
+            
+            zip_buf.seek(0)
+            return send_file(zip_buf, mimetype='application/zip', as_attachment=True, download_name='mspp_plots.zip')
+
+        elif chart_type == 'bar-chart':
+            fig = plotter.create_bar_chart_figure(data, figsize=(10, 6))
+            name = 'protein_id_bar_chart.png'
+        elif chart_type == 'sample-comparison':
+            fig = plotter.create_comparison_figure(data, figsize=(18, 16))
+            name = 'intensity_ratio_comparison.png'
+        else:
+            return jsonify({'error': 'Invalid plot type'}), 400
+
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', dpi=300, bbox_inches='tight')
+        buf.seek(0)
+        return send_file(buf, mimetype='image/png', as_attachment=True, download_name=name)
+    except Exception as e:
+        logger.exception(f"Export failed: {e}")
+        return jsonify({'error': 'Export failed due to an internal error.'}), 500
 
 
 if __name__ == "__main__":
